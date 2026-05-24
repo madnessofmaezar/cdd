@@ -77,6 +77,24 @@ def clean(arr, max_delta=2700):
                 arr[i] = np.nan
     return arr
 
+def draw_connectors(ax, x, arr, color, lw):
+    """Draw line segments across NaN gaps to keep curves continuous."""
+    n = len(arr)
+    i = 0
+    while i < n:
+        if np.isnan(arr[i]):
+            gap_start = i - 1
+            while i < n and np.isnan(arr[i]):
+                i += 1
+            gap_end = i
+            if gap_start >= 0 and gap_end < n:
+                ax.plot([x[gap_start], x[gap_end]],
+                        [arr[gap_start], arr[gap_end]],
+                        color=color, linewidth=lw, alpha=0.5,
+                        linestyle='--', dashes=(2, 2))
+        else:
+            i += 1
+
 # ── Plot ───────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(15, 6))
 fig.patch.set_facecolor("#111")
@@ -93,6 +111,8 @@ for i, lat in enumerate(LATS):
     lw = 1.2 if lat in (LATS[0], LATS[-1]) else 0.9
     ax.plot(x, rise,  color=color, linewidth=lw, alpha=0.9, label=f"{lat}°N")
     ax.plot(x, set_,  color=color, linewidth=lw, alpha=0.9)
+    draw_connectors(ax, x, rise, color, lw)
+    draw_connectors(ax, x, set_,  color, lw)
 
 # Y axis
 hour_ticks = list(range(0, 25, 3))
